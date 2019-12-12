@@ -24,8 +24,8 @@ $ git remote -v
 origin	https://github.com/dipadana/server.git (fetch)
 origin	https://github.com/dipadana/server.git (push)
 
-upstream	https://github.com/Book-E-Commerce/server.git (fetch)
-upstream	https://github.com/Book-E-Commerce/server.git (push)
+upstream https://github.com/Book-E-Commerce/server.git (fetch)
+upstream https://github.com/Book-E-Commerce/server.git (push)
 ```
 
 6. Happy Coding :)
