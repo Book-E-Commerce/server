@@ -9,13 +9,13 @@ Repositori For Server Book E-Commerce
 3. Tambahkan upstream pada hasil clone tersebut
 
 ```sh
-git remote add upstream https://github.com/Book-E-Commerce/server.git
+ $ git remote add upstream https://github.com/Book-E-Commerce/server.git
 ```
 
 4. Cek dan pastikan repo sudah tersambung ke organization
 
 ```sh
-git remote -v
+$ git remote -v
 ```
 
 5. Jika sudah muncul sama seperti dibawah ini, maka sudah tersambung
