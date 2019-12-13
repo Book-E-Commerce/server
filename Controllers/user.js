@@ -44,7 +44,6 @@ class UserController {
       .then((ticket) => {
         data = ticket.getPayload()
         const email = data.email
-        console.log(data);
         return User.findOne({ email })
       })
       .then(user => {

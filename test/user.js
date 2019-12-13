@@ -145,7 +145,7 @@ describe('User', function () {
         .send({ token })
         .end((err, res) => {
           expect(err).to.be.null
-          expect(res).to.have.status(2000)
+          expect(res).to.have.status(200)
           expect(res.body).to.have.all.keys('token', 'username', 'role', 'email')
           done()
         })
@@ -159,7 +159,7 @@ describe('User', function () {
         .send({ token })
         .end((err, res) => {
           expect(err).to.be.null
-          expect(res).to.have.status(2000)
+          expect(res).to.have.status(200)
           expect(res.body).to.have.all.keys('token', 'username', 'role', 'email')
           done()
         })
