@@ -4,7 +4,7 @@
   "description": "Repositori For Server Book E-Commerce",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "NODE_ENV=test mocha --exit",
     "dev": "NODE_ENV=development nodemon app.js"
   },
   "repository": {
@@ -28,6 +28,9 @@
     "morgan": "^1.9.1"
   },
   "devDependencies": {
-    "dotenv": "^8.2.0"
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "dotenv": "^8.2.0",
+    "mocha": "^6.2.2"
   }
 }

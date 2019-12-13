@@ -1,4 +1,4 @@
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
   require('dotenv').config()
 }
 
@@ -30,3 +30,5 @@ app.use(err)
 app.listen(PORT, () => {
   console.log(`Listening on port PORT ${PORT}`);
 })
+
+module.exports = app
