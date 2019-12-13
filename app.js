@@ -9,7 +9,7 @@ const connection = process.env.CONNECTION
 const PORT = process.env.PORT
 const cors = require('cors')
 const routes = require('./Routes/index')
-const err = require('./Middleware/errHandler')
+const err = require('./Middlewares/errHandler')
 const morgan = require('morgan')
 
 mongoose.connect(connection, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
