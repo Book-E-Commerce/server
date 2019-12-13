@@ -1,12 +1,12 @@
 const Cart = require('../Models/cart')
-// const Book = require('../Models/book)
+const Book = require('../Models/book')
 
 class CartController {
   static addToCart(req, res, next) {
     let { id } = req.logedUser
     let { qty } = req.body
     let { idBook } = req.params
-
+    console.log(idBook);
     if (qty <= 0) throw next({ status: 400, msg: 'Cannot buy product without quantity!' })
     Book.findById(idBook)
       .then(book => {

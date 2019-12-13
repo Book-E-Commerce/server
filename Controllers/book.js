@@ -5,7 +5,14 @@ class BookController{
 
   static async create(req,res,next){
     try {
-      const { title, author, category, rating, price, stock, description, image } = req.body
+      const { title, author, category, rating, price, stock, description } = req.body
+      let image
+      console.log(req.file)
+      if(req.file){
+        image = req.file.cloudStoragePublicUrl
+      } else {
+        image = ''
+      }
       const created = await Book.create({title, author, category, rating, price, stock, description, image, idGoogle : null})
       res.status(201).json(created)
     } catch (error) {
@@ -15,14 +22,45 @@ class BookController{
 
   static async findOne(req,res,next){
     try {
-      const {bookIs : _id} = req.params
+      const {bookId : _id} = req.params
       const book = await Book.findOne({_id})
-      res.status(200).json(book)
+      if (book.idGoogle){
+        const {data : detail} = await axios({
+          url: `https://www.googleapis.com/books/v1/volumes/${book.idGoogle}?key=${process.env.GOOGLE_API_KEY}`
+        })
+        if (detail.volumeInfo.imageLinks.medium){
+          book.image = detail.volumeInfo.imageLinks.medium
+          res.status(200).json(book)
+        } else {
+          res.status(200).json(book)
+        }
+      } else {
+        res.status(200).json(book)
+      }
     } catch (error) {
       next(error)
     }
   }
 
+  static async findByTitle(req,res,next){
+    try {
+      const { title } = req.query
+      const found = await Book.find({ title: {$regex: `${title}`, $options: 'i'} })
+      res.status(200).json(found)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static async findByAuthor(req,res,next){
+    try {
+      const { author } = req.query
+      const found = await Book.find({ author: {$regex: `${author}`, $options: 'i'} })
+      res.status(200).json(found)
+    } catch (error) {
+      next(error)
+    }
+  }
 
   static async findAll(req,res,next){
     try {
@@ -31,6 +69,34 @@ class BookController{
     } catch (error) {
       next(error)
     }
+  }
+
+  static async getAllCategories(req,res,next){
+    try {
+      const tags = await Book.find({}).select('category')
+      let categories = BookController.uniqueCategory(tags)
+      res.status(200).json(categories)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static uniqueCategory(tags){
+    let tagArr = []
+    let result = []
+    tags.forEach((tag)=>{
+      tag.category.forEach((allTag)=>{
+        tagArr.push(allTag)
+      })
+    })
+    let eachTag = [...new Set(tagArr)]
+    let obj = {}
+    eachTag.forEach((tag)=>{
+      obj.category = tag
+      result.push(obj)
+      obj = {}
+    })
+    return result
   }
 
   static async remove(req,res,next){
@@ -73,25 +139,6 @@ class BookController{
      next(error) 
     }
   }
-
-  // static async fetchApi(req,res,next){
-  //   try {
-  //     const search = 'Harry Potter'
-  //     const query = search.replace(' ','+')
-  //     console.log(query)
-  //     const {data} = await axios({
-  //       url : `/book/title.xml?key=${process.env.GR_API_KEY}&title=${query}`
-  //     })
-  //     const parser = new xml2js.Parser()
-  //     const result = await parser.parseStringPromise(data)
-  //     // let hasil = result['GoodreadsResponse']['']
-  //     // console.log(hasil);
-
-  //     res.status(200).json(result)
-  //   } catch (error) {
-  //     next(error)
-  //   }
-  // }
 
   static async seedingGoogle(req,res,next){
     try {
@@ -137,7 +184,6 @@ class BookController{
         })
       }
       res.status(201).json({message: 'success seeding data, check DB'})
-      // res.status(201).json(temp)
     } catch (error) {
       console.log(error);
       next(error)

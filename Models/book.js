@@ -35,13 +35,20 @@ const books = new Schema({
   },
   image : {
     type : String,
-    default : 'https://previews.123rf.com/images/hchjjl/hchjjl1504/hchjjl150402710/38564779-doodle-book-seamless-pattern-background.jpg'
   }
 
 },{
   versionKey : false,
   timestamps : true
 })
+
+books.pre('save',function(next){
+  if (this.image === ''){
+    this.image = 'https://previews.123rf.com/images/hchjjl/hchjjl1504/hchjjl150402710/38564779-doodle-book-seamless-pattern-background.jpg'
+  }
+  next()
+})
+
 
 const Book = mongoose.model('Book',books)
 module.exports = Book
