@@ -7,17 +7,18 @@ const books = new Schema({
     type : String,
     required : [true,'Book\'s title is required']
   },
-  author : {
+  idGoogle : {
     type : String,
+  },
+  author : {
+    type : [String],
     required : [true,'Book\'s author is required']
   },
   category : {
-    type : String,
-    required : [true,'Book\'s category is required']
+    type : [String],
   },
   rating : {
-    type : String,
-    required : [true,'Book\'s category is required']
+    type : Number,
   },
   price : {
     type : Number,
@@ -34,7 +35,7 @@ const books = new Schema({
   },
   image : {
     type : String,
-    default : 'https://imageog.flaticon.com/icons/png/512/36/36601.png?size=1200x630f&pad=10,10,10,10&ext=png&bg=FFFFFFFF'
+    default : 'https://previews.123rf.com/images/hchjjl/hchjjl1504/hchjjl150402710/38564779-doodle-book-seamless-pattern-background.jpg'
   }
 
 },{
