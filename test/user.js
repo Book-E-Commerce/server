@@ -134,4 +134,36 @@ describe('User', function () {
         })
     })
   })
+
+  // Login Google
+  describe('Google SignIn', () => {
+    // Succes register with google sign in
+    it(`Success`, function (done) {
+      let token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjIwMTEwOTFkYTAzYmFhNDA5MTllNmZmODM2YzhlN2Y5YWZhYmE5YTgiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiMTI3MTY4NTc4MzAxLXNtcXNvbnAwbTYwbmk3bXRha3I2a2t1MHJvYTI0OGI4LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiMTI3MTY4NTc4MzAxLXNtcXNvbnAwbTYwbmk3bXRha3I2a2t1MHJvYTI0OGI4LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTA4MTIwMjYzNDQxNzA1MTA4OTQ3IiwiZW1haWwiOiJkaXBhZGFuYWRldkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InNoV0RfWlZteGZOYUpObmotNXcwZXciLCJuYW1lIjoiRGlwYWRhbmEgUHV0dSIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS0vQUF1RTdtQW5zajFZbk9EQklFLUx5STBvdDNsUWVtamdwYjRPeHpEWkpFRmw9czk2LWMiLCJnaXZlbl9uYW1lIjoiRGlwYWRhbmEiLCJmYW1pbHlfbmFtZSI6IlB1dHUiLCJsb2NhbGUiOiJlbiIsImlhdCI6MTU3NjI0MjY0MiwiZXhwIjoxNTc2MjQ2MjQyLCJqdGkiOiJhODFmY2U1NzIyNDdkNTM5ZDc3ZjYxNTcyOWM2ZjA3ODM0NGZmYzdiIn0.pp9Z2o0mY35CzR2Vt9VAop3GNMIGubMHf5waZ8SIt_h1nA0wC5HmMndbiFvn7lZZXfhwOy5F-4OPIFOXzHtLdfRGumvgrfGzqoKtviRws7wTILMrD1E5Raeo4xzHQbDs927U06ZerTR4Sy4D2gxrN8hcUka_n_Gk7N1Zpr6xjh5tVpLjKKh2e-2VAfRKALEGJPv2ZaLu-k-Wizo_x1NRBxdvwLUAom7LnjnkZcbZlWtxC3pxPUY1ZTEg4fbaAWDOUPXal-tC0tHePyXiwcPzivorZiWm4fsf6VrZfBDWqOgpr_HG23PulbJJGy7vph38mXkAe_gqNIuQGJjuEUE5hQ"
+      chai.request(app)
+        .post('/users/gsignin')
+        .send({ token })
+        .end((err, res) => {
+          expect(err).to.be.null
+          expect(res).to.have.status(200)
+          expect(res.body).to.have.all.keys('token', 'username', 'role', 'email')
+          done()
+        })
+    })
+
+    // Success login with Google signin
+    it(`Success`, function (done) {
+      let token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjIwMTEwOTFkYTAzYmFhNDA5MTllNmZmODM2YzhlN2Y5YWZhYmE5YTgiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiMTI3MTY4NTc4MzAxLXNtcXNvbnAwbTYwbmk3bXRha3I2a2t1MHJvYTI0OGI4LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiMTI3MTY4NTc4MzAxLXNtcXNvbnAwbTYwbmk3bXRha3I2a2t1MHJvYTI0OGI4LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTA4MTIwMjYzNDQxNzA1MTA4OTQ3IiwiZW1haWwiOiJkaXBhZGFuYWRldkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InNoV0RfWlZteGZOYUpObmotNXcwZXciLCJuYW1lIjoiRGlwYWRhbmEgUHV0dSIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS0vQUF1RTdtQW5zajFZbk9EQklFLUx5STBvdDNsUWVtamdwYjRPeHpEWkpFRmw9czk2LWMiLCJnaXZlbl9uYW1lIjoiRGlwYWRhbmEiLCJmYW1pbHlfbmFtZSI6IlB1dHUiLCJsb2NhbGUiOiJlbiIsImlhdCI6MTU3NjI0MjY0MiwiZXhwIjoxNTc2MjQ2MjQyLCJqdGkiOiJhODFmY2U1NzIyNDdkNTM5ZDc3ZjYxNTcyOWM2ZjA3ODM0NGZmYzdiIn0.pp9Z2o0mY35CzR2Vt9VAop3GNMIGubMHf5waZ8SIt_h1nA0wC5HmMndbiFvn7lZZXfhwOy5F-4OPIFOXzHtLdfRGumvgrfGzqoKtviRws7wTILMrD1E5Raeo4xzHQbDs927U06ZerTR4Sy4D2gxrN8hcUka_n_Gk7N1Zpr6xjh5tVpLjKKh2e-2VAfRKALEGJPv2ZaLu-k-Wizo_x1NRBxdvwLUAom7LnjnkZcbZlWtxC3pxPUY1ZTEg4fbaAWDOUPXal-tC0tHePyXiwcPzivorZiWm4fsf6VrZfBDWqOgpr_HG23PulbJJGy7vph38mXkAe_gqNIuQGJjuEUE5hQ"
+      chai.request(app)
+        .post('/users/gsignin')
+        .send({ token })
+        .end((err, res) => {
+          expect(err).to.be.null
+          expect(res).to.have.status(200)
+          expect(res.body).to.have.all.keys('token', 'username', 'role', 'email')
+          done()
+        })
+    })
+  })
+
 })
