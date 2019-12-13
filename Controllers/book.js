@@ -7,7 +7,6 @@ class BookController{
     try {
       const { title, author, category, rating, price, stock, description } = req.body
       let image
-      console.log(req.file)
       if(req.file){
         image = req.file.cloudStoragePublicUrl
       } else {
@@ -32,6 +31,7 @@ class BookController{
           book.image = detail.volumeInfo.imageLinks.medium
           res.status(200).json(book)
         } else {
+          book.image = "https://previews.123rf.com/images/hchjjl/hchjjl1504/hchjjl150402710/38564779-doodle-book-seamless-pattern-background.jpg"
           res.status(200).json(book)
         }
       } else {
@@ -166,6 +166,8 @@ class BookController{
           obj.stock = 20 - Math.floor(Math.random()*5)
           if (el.volumeInfo.imageLinks){
             obj.image = el.volumeInfo.imageLinks.thumbnail
+          } else {
+            obj.image = ''
           }
           temp.push(obj)
         }
