@@ -41,16 +41,18 @@ class UserController {
     let data
 
     client.verifyIdToken({ idToken: token, audience: GOOGLE_CLIENT_ID })
-    then((ticket) => {
-      data = ticket.getPayload()
-      const email = data.email
-      return User.findOne({ email })
-    })
+      .then((ticket) => {
+        data = ticket.getPayload()
+        const email = data.email
+        console.log(data);
+        return User.findOne({ email })
+      })
       .then(user => {
         if (user) {
           return user
         } else {
           return User.create({
+            username: data.name,
             email: data.email,
             password: process.env.DEFAULT_PASSWORD
           })
@@ -59,7 +61,7 @@ class UserController {
       .then(user => {
         let payload = { id: user._id }
         let token = generateToken(payload)
-        res.status(200).json({ username: user.username, token })
+        res.status(200).json({ username: user.username, token, email: user.email, role: user.role })
       })
       .catch(next)
   }
