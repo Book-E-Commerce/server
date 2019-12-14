@@ -62,6 +62,16 @@ class BookController {
     }
   }
 
+  static async findByCategory(req,res,next) {
+    try {
+      const { category } = req.query
+      const found = await Book.find({ category: `${category}` })
+      res.status(200).json(found)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   static async findAll(req, res, next) {
     try {
       const books = await Book.find({})
@@ -151,25 +161,27 @@ class BookController {
       })
       data.items.forEach((el, i) => {
         if (el.volumeInfo.language === 'en') {
-          let obj = {}
-          obj.idGoogle = el.id
-          obj.title = el.volumeInfo.title
-          obj.author = el.volumeInfo.authors
-          obj.description = el.volumeInfo.description
-          obj.category = el.volumeInfo.categories
-          obj.rating = el.volumeInfo.averageRating
-          if (el.saleInfo.saleability !== 'NOT_FOR_SALE') {
-            obj.price = el.saleInfo.retailPrice.amount
-          } else {
-            obj.price = 100000
+          if (el.volumeInfo.description){
+            let obj = {}
+            obj.idGoogle = el.id
+            obj.title = el.volumeInfo.title
+            obj.author = el.volumeInfo.authors
+            obj.description = el.volumeInfo.description
+            obj.category = el.volumeInfo.categories
+            obj.rating = el.volumeInfo.averageRating
+            if (el.saleInfo.saleability !== 'NOT_FOR_SALE') {
+              obj.price = el.saleInfo.retailPrice.amount
+            } else {
+              obj.price = 100000
+            }
+            obj.stock = 20 - Math.floor(Math.random() * 5)
+            if (el.volumeInfo.imageLinks) {
+              obj.image = el.volumeInfo.imageLinks.thumbnail
+            } else {
+              obj.image = ''
+            }
+            temp.push(obj)
           }
-          obj.stock = 20 - Math.floor(Math.random() * 5)
-          if (el.volumeInfo.imageLinks) {
-            obj.image = el.volumeInfo.imageLinks.thumbnail
-          } else {
-            obj.image = ''
-          }
-          temp.push(obj)
         }
       })
       for (let key of temp) {
