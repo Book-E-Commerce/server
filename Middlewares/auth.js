@@ -8,8 +8,9 @@ function authentication(req, res, next) {
     req.logedUser = decodeToken
     next()
   }
-  catch{
-    next({ status: 400, msg: 'You are not authentication!' });
+  catch(err){
+    // next({ status: 400, msg: 'You are not authentication!' })
+    next(err)
   }
 
 }
