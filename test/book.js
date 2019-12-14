@@ -1,4 +1,5 @@
 const chai = require('chai')
+const fs = require('fs')
 const jwt = require('../Helpers/jwt')
 const expect = chai.expect
 const ChaiHttp = require('chai-http')
@@ -17,6 +18,7 @@ describe('Book testing', ()=>{
   let adminToken = ''
   let userToken = ''
   let bookId = ''
+  let tokenError = null
 
 
   let book = { 
@@ -27,7 +29,6 @@ describe('Book testing', ()=>{
     price : 20000,
     stock : 30,
     description : 'ini deskripsi buku',
-    image : 'ini link gambar'
   }
 
   before(async function(){
@@ -60,12 +61,49 @@ describe('Book testing', ()=>{
   })
 
   describe("Create Book testing",()=>{
+    // it('should success create new Book with status (201)',done=>{
+    //   chai
+    //     .request(app)
+    //     .post('/books')
+    //     .set('token',adminToken)
+    //     .field('title', 'ini test title')
+    //     .field('author', ['testing author'])
+    //     .field('category', ['ini', 'kategori'])
+    //     .field('rating', 3.4)
+    //     .field('price', 20000)
+    //     .field('stock', 30)
+    //     .field('description','ini deskripsi buku')
+    //     .attach('image', fs.readFileSync('./test/3._SX98_.jpg'),'3._SX98_.jpg' )
+    //     .end((err,res)=>{
+    //       expect(err).to.be.null
+    //       expect(res).to.have.status(201)
+    //       expect(res.body).to.be.an('object')
+    //       expect(res.body).to.have.all.keys(
+    //         "_id",
+    //         "author",
+    //         "title",
+    //         "category",
+    //         "stock",
+    //         "price",
+    //         "rating",
+    //         "description",
+    //         "idGoogle",
+    //         "image",
+    //         "createdAt",
+    //         "updatedAt"
+    //       )
+    //       bookId = res.body._id
+    //       productName = res.body.name
+    //       done()
+    //     })
+    // })
+
     it('should success create new Book with status (201)',done=>{
       chai
         .request(app)
         .post('/books')
-        .send(book)
         .set('token',adminToken)
+        .send(book)
         .end((err,res)=>{
           expect(err).to.be.null
           expect(res).to.have.status(201)
@@ -84,12 +122,13 @@ describe('Book testing', ()=>{
             "createdAt",
             "updatedAt"
           )
-          productId = res.body._id
+          bookId = res.body._id
           productName = res.body.name
           done()
         })
     })
   })
+  
 
   it('should error with code (400) because missing token',done=>{
     chai
@@ -97,9 +136,38 @@ describe('Book testing', ()=>{
       .post('/books')
       .send(book)
       .end((err,res)=>{
-        expect(res).to.have.status(400)
+        expect(res).to.have.status(401)
         expect(res.body).to.be.a('string')
         expect(res.body).to.equal('You are not authentication!')
+        done()
+      })
+  })
+
+  it('should error with code (401) because using user token',done=>{
+    chai
+      .request(app)
+      .post('/books')
+      .set('token',userToken)
+      .send(book)
+      .end((err,res)=>{
+        expect(res).to.have.status(400)
+        expect(res.body).to.be.a('string')
+        expect(res.body).to.equal('You are not Authorized!')
+        done()
+      })
+  })
+
+  it('should error with code (401) because token error',done=>{
+    chai
+      .request(app)
+      .post('/books')
+      .set('token', tokenError)
+      .send(book)
+      .end((err,res)=>{
+        console.log(res)
+        expect(res).to.have.status(401)
+        // expect(res.body).to.be.a('string')
+        // expect(res.body).to.equal('You are not Authorized!')
         done()
       })
   })
@@ -231,7 +299,6 @@ describe('Book testing', ()=>{
           expect(err).to.be.null
           expect(res).to.have.status(200)
           expect(res.body).to.be.an('array')
-          expect(res.body).to.be.an('array')
           expect(res.body[0]).to.be.an('object')
           expect(res.body[0]).to.have.property('author')
           expect(res.body[0]).to.have.property('category')
@@ -258,7 +325,7 @@ describe('Book testing', ()=>{
     it('should success read one book with status code (200)',done=>{
       chai
         .request(app)
-        .get(`/books/find-one/${productId}`)
+        .get(`/books/find-one/${bookId}`)
         .end((err,res)=>{
           expect(err).to.be.null
           expect(res).to.have.status(200)
@@ -313,10 +380,10 @@ describe('Book testing', ()=>{
         })
     })
 
-    it('should success read one book by title with status code (200)',done=>{
+    it('should success read one book by author with status code (200)',done=>{
       chai
         .request(app)
-        .get(`/books/book-title?title=test`)
+        .get(`/books/book-author?author=test`)
         .end((err,res)=>{
           expect(err).to.be.null
           expect(res).to.have.status(200)
@@ -343,7 +410,181 @@ describe('Book testing', ()=>{
         })
     })
 
+    it('should success read one book by category with status code (200)',done=>{
+      chai
+        .request(app)
+        .get(`/books/book-category?category=ini`)
+        .end((err,res)=>{
+          expect(err).to.be.null
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array')
+          expect(res.body).to.be.an('array')
+          expect(res.body[0]).to.be.an('object')
+          expect(res.body[0]).to.have.property('author')
+          expect(res.body[0]).to.have.property('category')
+          expect(res.body[0]).to.have.all.keys(
+            "_id",
+            "author",
+            "title",
+            "category",
+            "stock",
+            "price",
+            "rating",
+            "description",
+            "idGoogle",
+            "image",
+            "createdAt",
+            "updatedAt"
+          )
+          done()
+        })
+    })
 
+    it('should success read popular book with status (200)',done=>{
+      chai
+        .request(app)
+        .get(`/books/popular`)
+        .end((err,res)=>{
+          expect(err).to.be.null
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array')
+          expect(res.body[0]).to.be.an('object')
+          expect(res.body[0]).to.have.property('author')
+          expect(res.body[0]).to.have.property('category')
+          expect(res.body[0]).to.have.all.keys(
+            "_id",
+            "author",
+            "title",
+            "category",
+            "stock",
+            "price",
+            "rating",
+            "description",
+            "idGoogle",
+            "image",
+            "createdAt",
+            "updatedAt"
+          )
+          done()
+        })
+    })
+
+    it('should success get all categories (200)',done=>{
+      chai
+        .request(app)
+        .get(`/books/get-categories`)
+        .end((err,res)=>{
+          expect(err).to.be.null
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array')
+          expect(res.body[0]).to.be.an('object')
+          expect(res.body[0]).to.have.property('category')
+          expect(res.body[0].category).to.equal('ini')
+          done()
+        })
+    })
+
+    // it('should success seeding data to googleapis',done=>{
+    //   let obj = {}
+    //   obj.author = 'Dan Brown'
+    //   chai
+    //     .request(app)
+    //     .post(`/books/seedGoogle`)
+    //     .send(obj)
+    //     .end((err,res)=>{
+    //       expect(err).to.be.null
+    //       expect(res).to.have.status(201)
+    //       expect(res.body).to.be.an('object')
+    //       expect(res.body).to.have.property('message')
+    //       expect(res.body.message).to.equal('success seeding data, check DB')
+    //       done()
+    //     })
+    // })
+
+  })
+
+  describe('update a book', ()=>{
+    let obj = {}
+    obj.title = 'ini title update'
+    obj.author = 'ini author update'
+    obj.stock = 999
+    obj.price = 11111
+    obj.description = 'ini update description'
+
+    
+    it('should success update book (201)',done=>{
+      chai
+        .request(app)
+        .patch(`/books/${bookId}`)
+        .send(obj)
+        .set('token',adminToken)
+        .end((err,res)=>{
+          expect(err).to.be.null
+          expect(res).to.have.status(201)
+          expect(res.body).to.be.an('object')
+          expect(res.body).to.have.property('message')
+          expect(res.body).to.have.property('updated')
+          expect(res.body.message).to.equal('Book updated!')
+          expect(res.body.updated).to.be.an('object')
+          expect(res.body.updated).to.have.all.keys(
+            "_id",
+            "author",
+            "title",
+            "category",
+            "stock",
+            "price",
+            "rating",
+            "description",
+            "idGoogle",
+            "image",
+            "createdAt",
+            "updatedAt"
+          )
+          done()
+        })
+    })
+
+    it('should error with code (400) because missing token',done=>{
+      chai
+        .request(app)
+        .patch(`/books/${bookId}`)
+        .send(obj)
+        .end((err,res)=>{
+          expect(res).to.have.status(401)
+          expect(res.body).to.be.a('string')
+          expect(res.body).to.equal('You are not authentication!')
+          done()
+        })
+    })
+
+    it('should error with code (400) because unauthorize token',done=>{
+      chai
+        .request(app)
+        .patch(`/books/${bookId}`)
+        .send(obj)
+        .set('token',userToken)
+        .end((err,res)=>{
+          expect(res).to.have.status(400)
+          expect(res.body).to.be.a('string')
+          expect(res.body).to.equal('You are not Authorized!')
+          done()
+        })
+    })
+  })
+
+  describe('remove a book',()=>{
+    it('should success remove a book',done=>{
+      chai
+      .request(app)
+      .delete(`/books/${bookId}`)
+      .set('token',adminToken)
+      .end((err,res)=>{
+        expect(err).to.be.null
+        expect(res).to.have.status(200)
+        expect(res.body).to.be.an('object')
+        done()
+      })
+    })
   })
 
 

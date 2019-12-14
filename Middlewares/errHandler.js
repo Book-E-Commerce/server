@@ -3,10 +3,10 @@ module.exports = (err, req, res, next) => {
   let message
 
   switch (err.name) {
-    case 'AuthenticationError':
-      status = 401;
-      message = err.message
-      break;
+    // case 'AuthenticationError':
+    //   status = 401;
+    //   message = err.message
+    //   break;
     case 'ValidationError':
       status = 400
       let arr = []
@@ -15,7 +15,7 @@ module.exports = (err, req, res, next) => {
       break;
     case 'JsonWebTokenError':
       status = 401
-      message = err.message
+      message = 'You are not authentication!'
       break;
     default:
       status = err.status || 500
