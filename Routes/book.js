@@ -8,17 +8,20 @@ const { create,
   update, 
   seedingGoogle, 
   popular,
-  getAllCategories } = require('../Controllers/book')
+  getAllCategories,
+  findByCategory } = require('../Controllers/book')
 const { multer,sendUploadToGCS } = require('../Middlewares/uploader')
+const { adminAuth, authentication,  } = require('../Middlewares/auth')
 
-Book.post('/',multer.single('image'),sendUploadToGCS, create)
+Book.post('/',authentication, adminAuth, multer.single('image'),sendUploadToGCS, create)
 Book.get('/find-one/:bookId', findOne)
 Book.get('/book-title',findByTitle)
 Book.get('/book-author',findByAuthor)
+Book.get('/book-category', findByCategory)
 Book.get('/find-all', findAll)
 Book.get('/get-categories', getAllCategories)
-Book.delete('/:bookId', remove)
-Book.patch('/:bookId', update)
+Book.delete('/:bookId',authentication, adminAuth, remove)
+Book.patch('/:bookId',authentication, adminAuth, update)
 Book.post('/seedGoogle', seedingGoogle)
 Book.get('/popular',popular)
 

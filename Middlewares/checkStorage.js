@@ -4,7 +4,7 @@ const Cart = require('../Models/cart')
 async function checkStorage(req, res, next) {
   try {
     let idUser = req.logedUser.id
-    const cartUser = await Cart.find({idUser})
+    const cartUser = await Cart.find({idUser, status : false})
     let rejectBooks = []
     let getBooks = []
     for (let bookInCart of cartUser) {
