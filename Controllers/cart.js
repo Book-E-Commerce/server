@@ -11,7 +11,6 @@ class CartController {
 
     if (qty <= 0) throw next({ status: 400, msg: 'Cannot buy book without quantity!' })
 
-    const Carts = await redis.get('Carts')
     try {
       const book = await Book.findById(idBook)
       if (book.stock == 0) {
@@ -28,7 +27,7 @@ class CartController {
             idBook,
             qty
           })
-          if (Carts) redis.del('Carts')
+          await redis.del('Carts')
           res.status(201).json(cart)
         }
       }
@@ -41,10 +40,9 @@ class CartController {
     let { qty } = req.body
     let { idCart } = req.params
 
-    const Carts = await redis.get('Carts')
     try {
       const updated = await Cart.findByIdAndUpdate(idCart, { $set: { qty: qty } }, { runValidators: true, new: true })
-      if (Carts) redis.del('Carts')
+      await redis.del('Carts')
       res.status(200).json(updated)
     } catch (next) { }
   }
@@ -65,10 +63,9 @@ class CartController {
 
   static async deleteCart(req, res, next) {
     let { idCart } = req.params
-    const Carts = await redis.get('Carts')
     try {
       const deleted = await Cart.findByIdAndDelete(idCart)
-      if (Carts) redis.del('Carts')
+      await redis.del('Carts')
       res.status(200).json(deleted)
     } catch (next) { }
   }
