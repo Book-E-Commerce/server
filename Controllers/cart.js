@@ -46,9 +46,7 @@ class CartController {
       const updated = await Cart.findByIdAndUpdate(idCart, { $set: { qty: qty } }, { runValidators: true, new: true })
       if (Carts) redis.del('Carts')
       res.status(200).json(updated)
-    } catch (err) {
-      next(err)
-    }
+    } catch (next) { }
   }
 
   static async showCart(req, res, next) {
@@ -61,9 +59,7 @@ class CartController {
         const allCarts = await Cart.find({ idUser: id, status: false }).populate('idBook')
         await redis.set('Carts', JSON.stringify(allCarts))
         res.status(200).json(allCarts)
-      } catch (err) {
-        next(err)
-      }
+      } catch (next) { }
     }
   }
 
@@ -74,9 +70,7 @@ class CartController {
       const deleted = await Cart.findByIdAndDelete(idCart)
       if (Carts) redis.del('Carts')
       res.status(200).json(deleted)
-    } catch (err) {
-      next(err)
-    }
+    } catch (next) { }
   }
 }
 
