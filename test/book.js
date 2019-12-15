@@ -319,6 +319,35 @@ describe('Book testing', ()=>{
           done()
         })
     })
+
+    it('should success read all books with status code (200)',done=>{
+      chai
+        .request(app)
+        .get('/books/find-all')
+        .end((err,res)=>{
+          expect(err).to.be.null
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array')
+          expect(res.body[0]).to.be.an('object')
+          expect(res.body[0]).to.have.property('author')
+          expect(res.body[0]).to.have.property('category')
+          expect(res.body[0]).to.have.all.keys(
+            "_id",
+            "author",
+            "title",
+            "category",
+            "stock",
+            "price",
+            "rating",
+            "description",
+            "idGoogle",
+            "image",
+            "createdAt",
+            "updatedAt"
+          )
+          done()
+        })
+    })
   })
 
   describe('read one books',()=>{
@@ -766,6 +795,20 @@ describe('Book testing', ()=>{
           expect(res).to.have.status(400)
           expect(res.body).to.be.a('string')
           expect(res.body).to.equal('You are not Authorized!')
+          done()
+        })
+    })
+  })
+
+  describe('search book by author or title or category',()=>{
+    it ('should success search book by all query', done=>{
+      chai
+        .request(app)
+        .get(`/books/search?keyword=ini`)
+        .end((err,res)=>{
+          expect(res).to.have.status(200)
+          expect(res.body).to.be.an('array')
+          expect(res.body[0]).to.be.an('object')
           done()
         })
     })

@@ -14,6 +14,8 @@ function uniqueBook(transactions) {
     obj.qty = 0 
     obj.bookId = book
     salesArr.forEach((sales) =>{
+      console.log(sales, 'ini sales ')
+      console.log(book, "ini book")
       if (sales.bookId.toString() === book){
         obj.qty += sales.qty
       }

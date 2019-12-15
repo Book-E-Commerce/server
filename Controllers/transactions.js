@@ -29,20 +29,32 @@ class TransactionController{
         message : 'Checkout done!',
         transaction: createTransaction
       }
+      await redis.del(`Transaction-${req.logedUser.id}`)
+      await redis.del('Transactions')
+      await redis.del('Transactions-Weekly')
+      await redis.del('Transactions-Best')
       res.status(201).json({report})
     } catch (error) {
+      /* istanbul ignore next */
       next(error)
     }
   }
 
   static async user(req,res,next){
-    try {
-      let userId = req.logedUser.id
-      let transactions = await Transaction.find({userId}).populate('cart.bookId').sort({createdAt: 'desc'})
+    const cacheUserTrans = await redis.get(`Transaction-${req.logedUser.id}`)
+    if (cacheUserTrans){
+      let transactions = JSON.parse(cacheUserTrans)
       res.status(200).json(transactions)
-    } catch (error) {
-      /* istanbul ignore next */
-      next(error)
+    } else {
+      try {
+        let userId = req.logedUser.id
+        let transactions = await Transaction.find({userId}).populate('cart.bookId').sort({createdAt: 'desc'})
+        await redis.set(`Transaction-${req.logedUser.id}`, JSON.stringify(transactions))
+        res.status(200).json(transactions)
+      } catch (error) {
+        /* istanbul ignore next */
+        next(error)
+      }
     }
   }
 
@@ -67,6 +79,9 @@ class TransactionController{
     try {
       let {transactionId} = req.params
       const deleteTrans = await Transaction.findByIdAndDelete({_id:transactionId})
+      await redis.del('Transactions')
+      await redis.del('Transactions-Weekly')
+      await redis.del('Transactions-Best')
       let message = 'Transaction deleted!'
       res.status(200).json({message, deleteTrans})
     } catch (error) {
@@ -76,64 +91,82 @@ class TransactionController{
   }
 
   static async bestSelling(req,res,next){
-    try {
-      const allTransactions = await Transaction.find({},'cart createdAt updatedAt')
-      const report = uniqueBook(allTransactions)
-      let sorted = [...report]
-      sorted.sort((a,b) => parseFloat(b.qty) - parseFloat(a.qty))
-      let result = []
-      for (let key of sorted){
-        const title = await Book.findOne({_id : key.bookId}).select('title')
-        let obj = {}
-        obj.title = title
-        obj.qty = key.qty
-        result.push(obj)
+    const bestSelling = await redis.get('Transactions-Best')
+    if (bestSelling) {
+     res.status(200).json(JSON.parse(bestSelling))
+    } else {
+      try {
+        const allTransactions = await Transaction.find({},'cart createdAt updatedAt')
+        const report = uniqueBook(allTransactions)
+        let sorted = [...report]
+        sorted.sort((a,b) => parseFloat(b.qty) - parseFloat(a.qty))
+        let result = []
+        for (let key of sorted){
+          const title = await Book.findOne({_id : key.bookId}).select('title')
+          let obj = {}
+          obj.title = title
+          obj.qty = key.qty
+          result.push(obj)
+        }
+        await redis.set('Transactions-Best', JSON.stringify(result))
+        res.status(200).json(result)
+      } catch (error) {
+        /* istanbul ignore next */
+        next(error)
       }
-      res.status(200).json(result)
-    } catch (error) {
-      /* istanbul ignore next */
-      next(error)
     }
   }
 
   static async weeklyReport(req,res,next){
-    try {
-      let end = new Date()
-      let start = new Date()
-      start.setDate(start.getDate()-7)
-
-      let pipeline = [
-        {
-          '$match' : {
-            "createdAt" : {
-              "$gte" : start,
-              "$lte" : end 
-            }
-          }
-        },
-        {
-          '$group':{
-            "_id" : {
-              "Date": {
-                "$dateToString":{
-                  "format" : "%Y-%m-%d",
-                  "date": "$createdAt"
-                }
+    const weeklyReport = await redis.get('Transactions-Weekly')
+    console.log(weeklyReport)
+    if (weeklyReport) {
+      res.status(200).json(JSON.parse(weeklyReport))
+    } else {
+      try {
+        let end = new Date()
+        let start = new Date()
+        start.setDate(start.getDate()-7)
+  
+        let pipeline = [
+          {
+            '$match' : {
+              "createdAt" : {
+                "$gte" : start,
+                "$lte" : end 
               }
-            },
-            "count": { 
-              "$sum": { "$sum": "$cart.qty" }
+            }
+          },
+          {
+            '$sort' : {
+              "createdAt" : 1
+            }
+          },
+          {
+            '$group':{
+              "_id" : {
+                "Date": {
+                  "$dateToString":{
+                    "format" : "%Y-%m-%d",
+                    "date": "$createdAt"
+                  }
+                }
+              },
+              "count": { 
+                "$sum": { "$sum": "$cart.qty" }
+              }
             }
           }
-        }
-      ]
-
-      const transactions = await Transaction.aggregate(pipeline)
-      console.log(transactions)
-      res.status(200).json(transactions)
-    } catch (error) {
-      /* istanbul ignore next */
-      next(error)
+        ]
+  
+        const transactions = await Transaction.aggregate(pipeline)
+        await redis.set('Transactions-Weekly', JSON.stringify(transactions))
+        console.log(transactions)
+        res.status(200).json(transactions)
+      } catch (error) {
+        /* istanbul ignore next */
+        next(error)
+      }
     }
   }
 }

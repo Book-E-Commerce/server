@@ -9,7 +9,8 @@ const { create,
   seedingGoogle, 
   popular,
   getAllCategories,
-  findByCategory } = require('../Controllers/book')
+  findByCategory,
+  elastic } = require('../Controllers/book')
 const { multer,sendUploadToGCS } = require('../Middlewares/uploader')
 const { adminAuth, authentication,  } = require('../Middlewares/auth')
 
@@ -24,5 +25,6 @@ Book.delete('/:bookId',authentication, adminAuth, remove)
 Book.patch('/:bookId',authentication, adminAuth, multer.single('image'),sendUploadToGCS,update)
 Book.post('/seedGoogle', seedingGoogle)
 Book.get('/popular',popular)
+Book.get('/search', elastic)
 
 module.exports = Book
