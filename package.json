@@ -4,7 +4,7 @@
   "description": "Repositori For Server Book E-Commerce",
   "main": "app.js",
   "scripts": {
-    "test": "NODE_ENV=test nyc mocha --exit",
+    "test": "redis-cli flushall && NODE_ENV=test nyc mocha --exit",
     "dev": "NODE_ENV=development nodemon app.js"
   },
   "repository": {

@@ -12,21 +12,18 @@ const routes = require('./Routes/index')
 const err = require('./Middlewares/errHandler')
 const morgan = require('morgan')
 
+/*istanbul ignore next */
 if (process.env.NODE_ENV === 'development'){
-  mongoose.connect(connection, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
-  const db = mongoose.connection
-  db.on('error', console.error.bind(console, 'connection error'))
-  db.once('open', function () {
-    console.log('Database User connected!');
-  })
+  mongoose.connect(connection, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false })
 } else {
-  mongoose.connect('mongodb://localhost:27017/final_project_server_test', { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
-  const db = mongoose.connection
-  db.on('error', console.error.bind(console, 'connection error'))
-  db.once('open', function () {
-    console.log('Database User connected!');
-  })
+  mongoose.connect('mongodb://localhost:27017/final_project_server_test', { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false })
 }
+
+const db = mongoose.connection
+db.on('error', console.error.bind(console, 'connection error'))
+db.once('open', function () {
+  console.log('Database Testing connected!');
+})
 
 app.use(morgan('dev'))
 app.use(cors())

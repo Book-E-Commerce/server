@@ -219,7 +219,7 @@ describe('Cart', function () {
         .send({ qty: 1 })
         .end((err, res) => {
           expect(err).to.be.null
-          expect(res).to.have.status(400)
+          expect(res).to.have.status(401)
           expect(res.body).to.be.equal('You are not authentication!')
           done()
         })
@@ -274,7 +274,7 @@ describe('Cart', function () {
         .get('/carts')
         .end((err, res) => {
           expect(err).to.be.null
-          expect(res).to.have.status(400)
+          expect(res).to.have.status(401)
           expect(res.body).to.be.equal('You are not authentication!')
           done()
         })
@@ -304,7 +304,7 @@ describe('Cart', function () {
         .delete(`/carts/${id}/delete`)
         .end((err, res) => {
           expect(err).to.be.null
-          expect(res).to.have.status(400)
+          expect(res).to.have.status(401)
           expect(res.body).to.be.equal('You are not authentication!')
           done()
         })

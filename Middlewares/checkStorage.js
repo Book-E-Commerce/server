@@ -22,6 +22,7 @@ async function checkStorage(req, res, next) {
      next({status : 400, message : {text : 'Out of stock, please delete some items', books : {rejectBooks, getBooks} }})
    }
   } catch (error) {
+    /*istanbul ignore next */
     next(error)
   }
 }
