@@ -21,7 +21,7 @@ Book.get('/book-category', findByCategory)
 Book.get('/find-all', findAll)
 Book.get('/get-categories', getAllCategories)
 Book.delete('/:bookId',authentication, adminAuth, remove)
-Book.patch('/:bookId',authentication, adminAuth, update)
+Book.patch('/:bookId',authentication, adminAuth, multer.single('image'),sendUploadToGCS,update)
 Book.post('/seedGoogle', seedingGoogle)
 Book.get('/popular',popular)
 

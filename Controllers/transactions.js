@@ -39,6 +39,7 @@ class TransactionController{
       let transactions = await Transaction.find({userId}).populate('cart.bookId').sort({createdAt: 'desc'})
       res.status(200).json(transactions)
     } catch (error) {
+      /* istanbul ignore next */
       next(error)
     }
   }
@@ -48,6 +49,7 @@ class TransactionController{
       const transactions = await Transaction.find({}).populate('cart.bookId').populate('userId').sort({createdAt: 'desc'})
       res.status(200).json({transactions})
     } catch (error) {
+      /* istanbul ignore next */
       next(error)
     }
   }
@@ -55,10 +57,11 @@ class TransactionController{
   static async remove(req,res,next){
     try {
       let {transactionId} = req.params
-      const deleteTrans = await Transaction.deleteOne({_id:transactionId})
+      const deleteTrans = await Transaction.findByIdAndDelete({_id:transactionId})
       let message = 'Transaction deleted!'
       res.status(200).json({message, deleteTrans})
     } catch (error) {
+      /* istanbul ignore next */
       next(error)
     }
   }
@@ -79,6 +82,7 @@ class TransactionController{
       }
       res.status(200).json(result)
     } catch (error) {
+      /* istanbul ignore next */
       next(error)
     }
   }
@@ -116,8 +120,10 @@ class TransactionController{
       ]
 
       const transactions = await Transaction.aggregate(pipeline)
+      console.log(transactions)
       res.status(200).json(transactions)
     } catch (error) {
+      /* istanbul ignore next */
       next(error)
     }
   }

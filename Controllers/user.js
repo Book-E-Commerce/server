@@ -33,6 +33,7 @@ class UserController {
       .catch(next)
   }
 
+  /*istanbul ignore next */
   static googleSignIn(req, res, next) {
     const { OAuth2Client } = require('google-auth-library')
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
