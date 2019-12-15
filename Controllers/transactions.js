@@ -2,6 +2,8 @@ const Transaction = require('../Models/transaction')
 const Book = require('../Models/book')
 const Cart = require('../Models/cart')
 const uniqueBook = require('../Helpers/uniqueTransactions')
+const Redis = require('ioredis')
+const redis = new Redis()
 
 class TransactionController{
 
@@ -45,12 +47,19 @@ class TransactionController{
   }
 
   static async all(req,res,next){
-    try {
-      const transactions = await Transaction.find({}).populate('cart.bookId').populate('userId').sort({createdAt: 'desc'})
+    const cacheAllTrans = await redis.get('Transactions')
+    if (cacheAllTrans){
+      let transactions = JSON.parse(cacheAllTrans)
       res.status(200).json({transactions})
-    } catch (error) {
-      /* istanbul ignore next */
-      next(error)
+    } else {
+      try {
+        const transactions = await Transaction.find({}).populate('cart.bookId').populate('userId').sort({createdAt: 'desc'})
+        await redis.set('Transactions', JSON.stringify(transactions))
+        res.status(200).json({transactions})
+      } catch (error) {
+        /* istanbul ignore next */
+        next(error)
+      }
     }
   }
 
