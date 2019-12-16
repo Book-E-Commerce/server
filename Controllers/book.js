@@ -1,5 +1,6 @@
 const Book = require('../Models/book')
 const axios = require('../config/axios')
+const googleParser = require('../Helpers/googleParser')
 const Redis = require('ioredis')
 const redis = new Redis()
 
@@ -18,6 +19,8 @@ class BookController {
       }
       const created = await Book.create({ title, author, category, rating, price, stock, description, image, idGoogle: null })
       await redis.del('Books')
+      await redis.del('allCategories')
+      await redis.del('Popular')
       res.status(201).json(created)
     } catch (error) {
       next(error)
@@ -128,9 +131,7 @@ class BookController {
 
   static async getAllCategories(req, res, next) {
     /* istanbul ignore next */
-    console.log('------------------------')
     const Categories = await redis.get('allCategories')
-    console.log('ashdg,ashdb,ashd,')
     /* istanbul ignore next */
     if (Categories) {
       /* istanbul ignore next */
@@ -173,6 +174,7 @@ class BookController {
       await redis.del('Books')
       await redis.del('Popular')
       await redis.del(`Book-${req.params.bookId}`)
+      await redis.del('allCategories')
       res.status(200).json(deleted)
     } catch (error) {
       /* istanbul ignore next */
@@ -203,6 +205,7 @@ class BookController {
         await redis.del('Books')
         await redis.del('Popular')
         await redis.del(`Book-${req.params.bookId}`)
+        await redis.del('allCategories')
         res.status(201).json({ message, updated })
       } else {
         console.log('masuk req body =============<<<<<')
@@ -213,6 +216,7 @@ class BookController {
         await redis.del('Books')
         await redis.del('Popular')
         await redis.del(`Book-${req.params.bookId}`)
+        await redis.del('allCategories')
         res.status(201).json({ message, updated })
       }
     } catch (error) {
@@ -226,41 +230,13 @@ class BookController {
     try {
       const { author } = req.body
       const search = author.replace(' ', '+')
-      let temp = []
       const { data } = await axios({
         method: 'get',
         url: `https://www.googleapis.com/books/v1/volumes?q=inauthor:${search}&key=${process.env.GOOGLE_API_KEY}`
       })
-      data.items.forEach((el, i) => {
-        if (el.volumeInfo.language === 'en') {
-          if (el.volumeInfo.description) {
-            let obj = {}
-            obj.idGoogle = el.id
-            obj.title = el.volumeInfo.title
-            obj.author = el.volumeInfo.authors
-            obj.description = el.volumeInfo.description
-            obj.category = el.volumeInfo.categories
-            obj.rating = el.volumeInfo.averageRating
-            if (el.saleInfo.saleability !== 'NOT_FOR_SALE') {
-              if (el.saleInfo.retailPrice.amount < 200){
-                obj.price = el.saleInfo.retailPrice.amount * 15000
-              } else {
-                obj.price = el.saleInfo.retailPrice.amount
-              }
-            } else {
-              obj.price = 100000
-            }
-            obj.stock = 20 - Math.floor(Math.random() * 5)
-            if (el.volumeInfo.imageLinks) {
-              obj.image = el.volumeInfo.imageLinks.thumbnail
-            } else {
-              obj.image = ''
-            }
-            temp.push(obj)
-          }
-        }
-      })
-      for (let key of temp) {
+
+      let parserResult = googleParser(data)
+      for (let key of parserResult) {
         const created = await Book.create({
           idGoogle: key.idGoogle,
           title: key.title,
@@ -274,12 +250,51 @@ class BookController {
         })
       }
       await redis.del('Books')
-      res.status(201).json({ message: 'success seeding data, check DB' })
+      await redis.del('allCategories')
+      await redis.del('Popular')
+      res.status(201).json({ message: 'success seeding data by author, check DB' })
     } catch (error) {
       /* istanbul ignore next */
       next(error)
     }
   }
+
+  /* istanbul ignore next */
+  static async seedByCategory(req,res,next){
+    try {
+      const { category } = req.body
+      const search = category.replace(' ', '+')
+      const { data } = await axios({
+        method: 'get',
+        url: `https://www.googleapis.com/books/v1/volumes?q=subject:${search}&maxResults=30&key=${process.env.GOOGLE_API_KEY}`
+      })
+      let parserResult = googleParser(data)
+
+      for (let key of parserResult) {
+        const duplicateBooks = await Book.find({idGoogle : key.idGoogle})
+        if (duplicateBooks.length < 1){
+          const created = await Book.create({
+            idGoogle: key.idGoogle,
+            title: key.title,
+            author: key.author,
+            description: key.description,
+            category: key.category,
+            rating: key.rating,
+            price: key.price,
+            stock: key.stock,
+            image: key.image
+          })
+        }
+      }
+      await redis.del('Books')
+      await redis.del('allCategories')
+      await redis.del('Popular')
+      res.status(201).json({ message: 'success seeding data by category, check DB' })
+    } catch (error) {
+      next(error)
+    }
+  }
+
 
 
   static async popular(req, res, next) {

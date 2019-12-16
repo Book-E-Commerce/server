@@ -16,8 +16,8 @@ let book2
 let id
 
 describe('Cart', function () {
+  this.timeout(10000)
   before(function (done) {
-    this.timeout(6000)
     let dataAdmin = {
       username: 'admin',
       email: 'email@gmail.com',
@@ -290,7 +290,7 @@ describe('Cart', function () {
         .end((err, res) => {
           expect(err).to.be.null
           expect(res).to.have.status(200)
-          expect(res.body).to.be.an('object')
+          expect(res.body).to.be.an('array')
           done()
         })
     })
