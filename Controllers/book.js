@@ -35,7 +35,6 @@ class BookController {
       try {
         const { bookId: _id } = req.params
         const book = await Book.findOne({ _id })
-        console.log('if id Google')
         /* istanbul ignore next */
         if (book.idGoogle) {
           const { data: detail } = await axios({
@@ -51,7 +50,6 @@ class BookController {
             res.status(200).json(book)
           }
         } else {
-          console.log('masuk ke else')
           await redis.set(`Book-${_id}`, JSON.stringify(book))
           res.status(200).json(book)
         }
@@ -197,7 +195,6 @@ class BookController {
       })
       /* istanbul ignore next */
       if (req.file) {
-        console.log('masuk req file ---------->>>>');
         let image = req.file.cloudStoragePublicUrl
         obj.image = image
         const updated = await Book.findOneAndUpdate({ _id: bookId }, obj, { runValidators: true, new: true })
@@ -208,7 +205,6 @@ class BookController {
         await redis.del('allCategories')
         res.status(201).json({ message, updated })
       } else {
-        console.log('masuk req body =============<<<<<')
         let image = await Book.findOne({ _id: bookId }).select('image')
         obj.image = image.image
         const updated = await Book.findOneAndUpdate({ _id: bookId }, obj, { runValidators: true, new: true })
