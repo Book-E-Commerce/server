@@ -9,18 +9,18 @@ class CartController {
     let { qty } = req.body
     let { idBook } = req.params
 
-    if (qty <= 0) throw next({ status: 400, msg: 'Cannot buy book without quantity!' })
+    if (qty <= 0) next({ status: 400, msg: 'Cannot buy book without quantity!' })
 
     try {
       const book = await Book.findById(idBook)
       if (book.stock == 0) {
-        throw next({ status: 400, msg: `Sorry this book out of stock!` })
+        next({ status: 400, msg: `Sorry this book out of stock!` })
       } else if (qty > book.stock) {
-        throw next({ status: 400, msg: `Sorry you are cannot buy book more then book stock!!` })
+        next({ status: 400, msg: `Sorry you are cannot buy book more then book stock!!` })
       } else {
         const dataCart = await Cart.find({ idUser: id, idBook: idBook, status: false })
         if (dataCart.length == 1) {
-          throw next({ status: 403, msg: `This book is already in your cart bucket, please open your cart bucket to procces your transaction!` })
+          next({ status: 403, msg: `This book is already in your cart bucket, please open your cart bucket to procces your transaction!` })
         } else {
           const cart = await Cart.create({
             idUser: id,
@@ -31,9 +31,7 @@ class CartController {
           res.status(201).json(cart)
         }
       }
-    } catch (err) {
-      next(err)
-    }
+    } catch (next) { }
   }
 
   static async updateQty(req, res, next) {
