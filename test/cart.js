@@ -10,13 +10,14 @@ const { generateToken } = require('../Helpers/jwt')
 chai.use(chaiHttp)
 
 let customer
+let customer2
 let admin
 let book1
 let book2
 let id
 
 describe('Cart', function () {
-  before(function (done) {
+  before(async function () {
     this.timeout(6000)
     let dataAdmin = {
       username: 'admin',
@@ -27,6 +28,11 @@ describe('Cart', function () {
     let dataCust = {
       username: 'customer',
       email: 'customer@gmail.com',
+      password: 'password'
+    }
+    let dataCust2 = {
+      username: 'cust',
+      email: 'cust@gmail.com',
       password: 'password'
     }
     let dataBook1 = {
@@ -50,86 +56,47 @@ describe('Cart', function () {
       image: 'http://denrakaev.com/wp-content/uploads/2015/03/no-image-800x511.png'
     }
 
-    function createAdmin() {
-      return new Promise((resolve, reject) => {
-        dbUser.create(
-          dataAdmin
-        )
-          .then(user => {
-            let token = generateToken({ id: user._id })
-            admin = { token }
-            resolve()
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+    async function createAdmin() {
+      const user = await dbUser.create(dataAdmin)
+      const token = generateToken({ id: user._id })
+      admin = { token }
     }
 
-    function createCust() {
-      return new Promise((resolve, reject) => {
-        dbUser.create(
-          dataCust
-        )
-          .then(user => {
-            let token = generateToken({ id: user._id })
-            customer = { token }
-            resolve()
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+    async function createCust() {
+      const user = await dbUser.create(dataCust)
+      const token = generateToken({ id: user._id })
+      customer = { token }
     }
 
-    function createProduct1() {
-      return new Promise((resolve, reject) => {
-        dbBook.create(dataBook1)
-          .then(book => {
-            book1 = book._id
-            // img1 = product.imgUrl
-            resolve()
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+    async function createCust2() {
+      const user = await dbUser.create(dataCust2)
+      const token = generateToken({ id: user._id })
+      customer2 = { token }
     }
 
-    function createProduct2() {
-      return new Promise((resolve, reject) => {
-        dbBook.create(dataBook2)
-          .then(book => {
-            book2 = book._id
-            // img2 = product.imgUrl
-            resolve()
-          })
-          .catch(err => {
-            reject(err)
-          })
-      })
+    async function createProduct1() {
+      const book = await dbBook.create(dataBook1)
+      book1 = book._id
     }
 
-    Promise.all([createAdmin(), createCust()])
-      .then(() => {
-        Promise.all([createProduct1(), createProduct2()])
-      })
-      .then(() => {
-        done()
-      })
-      .catch(err => {
-        return Promise.all([dbBook.deleteMany({}), dbUser.deleteMany({})])
-      })
-      .then(() => { }
-      )
-      .catch(err => {
-        console(err)
-      })
+    async function createProduct2() {
+      const book = await dbBook.create(dataBook2)
+      book2 = book._id
+    }
+
+    try {
+      await createAdmin()
+      await createCust()
+      await createCust2()
+      await createProduct1()
+      await createProduct2()
+    } catch (e) {
+      await dbBook.deleteMany({})
+      await dbUser.deleteMany({})
+    }
   })
 
   after(() => {
-    // gcsDelete(img1)
-    // gcsDelete(img2)
     db.collection.deleteMany({})
     dbUser.collection.deleteMany({})
     dbBook.collection.deleteMany({})
@@ -290,7 +257,7 @@ describe('Cart', function () {
         .end((err, res) => {
           expect(err).to.be.null
           expect(res).to.have.status(200)
-          expect(res.body).to.be.an('object')
+          expect(res.body).to.be.an('array')
           done()
         })
     })
@@ -298,14 +265,15 @@ describe('Cart', function () {
 
   // Delete Product from carts
   describe('Delete product from carts', function () {
-    // Error: Not authentication
-    it(`Should error with status 400 and message You are not authentication!`, function (done) {
+    // Error: Not authorization (not customer)
+    it(`Should error with status 400 and message ypu are not authorization`, function (done) {
       chai.request(app)
         .delete(`/carts/${id}/delete`)
+        .set(admin, admin)
         .end((err, res) => {
           expect(err).to.be.null
-          expect(res).to.have.status(401)
-          expect(res.body).to.be.equal('You are not authentication!')
+          expect(res).to.have.status(400)
+          expect(res.body).to.be.equal('You are not Authorized!')
           done()
         })
     })
@@ -314,7 +282,7 @@ describe('Cart', function () {
     it(`Should error with status 400 and message ypu are not authorization`, function (done) {
       chai.request(app)
         .delete(`/carts/${id}/delete`)
-        .set(admin, admin)
+        .set(customer2, customer2)
         .end((err, res) => {
           expect(err).to.be.null
           expect(res).to.have.status(400)
@@ -336,6 +304,4 @@ describe('Cart', function () {
         })
     })
   })
-
-  
 })
