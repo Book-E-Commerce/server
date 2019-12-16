@@ -242,7 +242,11 @@ class BookController {
             obj.category = el.volumeInfo.categories
             obj.rating = el.volumeInfo.averageRating
             if (el.saleInfo.saleability !== 'NOT_FOR_SALE') {
-              obj.price = el.saleInfo.retailPrice.amount
+              if (el.saleInfo.retailPrice.amount < 200){
+                obj.price = el.saleInfo.retailPrice.amount * 15000
+              } else {
+                obj.price = el.saleInfo.retailPrice.amount
+              }
             } else {
               obj.price = 100000
             }
