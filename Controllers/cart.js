@@ -39,11 +39,13 @@ class CartController {
   static async updateQty(req, res, next) {
     let { qty } = req.body
     let { idCart } = req.params
+    let { id } = req.logedUser
 
     try {
-      const updated = await Cart.findByIdAndUpdate(idCart, { $set: { qty: qty } }, { runValidators: true, new: true })
+      await Cart.findByIdAndUpdate(idCart, { $set: { qty: qty } }, { runValidators: true, new: true })
+      const newDataCarts = await Cart.find({ idUser: id, status: false }).populate('idBook')
       await redis.del('Carts')
-      res.status(200).json(updated)
+      res.status(200).json(newDataCarts)
     } catch (next) { }
   }
 
