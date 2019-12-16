@@ -29,6 +29,7 @@ class TransactionController{
         message : 'Checkout done!',
         transaction: createTransaction
       }
+      await redis.del('Carts')
       await redis.del(`Transaction-${req.logedUser.id}`)
       await redis.del('Transactions')
       await redis.del('Transactions-Weekly')
