@@ -101,7 +101,7 @@ class BookController {
     } else {
       try {
         const { category } = req.query
-        const found = await Book.find({ category: `${category}` })
+        const found = await Book.find({ category: { $regex: `${category}`, $options: 'i' }  })
         await redis.set(`Books-${category}`, JSON.stringify(found))
         res.status(200).json(found)
       } catch (error) {
