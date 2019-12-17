@@ -48,7 +48,7 @@ class CartController {
   }
 
   static async showCart(req, res, next) {
-    // let { id } = req.logedUser
+    let { id } = req.logedUser
     // const Carts = await redis.get('Carts')
     // if (Carts) {
     //   res.status(200).json(JSON.parse(Carts))
