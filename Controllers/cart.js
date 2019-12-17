@@ -27,7 +27,6 @@ class CartController {
             idBook,
             qty
           })
-          // await redis.del('Carts')
           res.status(201).json(cart)
         }
       }
@@ -42,19 +41,12 @@ class CartController {
     try {
       await Cart.findByIdAndUpdate(idCart, { $set: { qty: qty } }, { runValidators: true, new: true })
       const newDataCarts = await Cart.find({ idUser: id, status: false }).populate('idBook')
-      // await redis.del('Carts')
       res.status(200).json(newDataCarts)
     } catch (next) { }
   }
 
   static async showCart(req, res, next) {
     let { id } = req.logedUser
-    // const Carts = await redis.get('Carts')
-    // if (Carts) {
-    //   res.status(200).json(JSON.parse(Carts))
-    // await redis.set('Carts', JSON.stringify(allCarts))
-    // } else {
-    // }
       try {
         const allCarts = await Cart.find({ idUser: id, status: false }).populate('idBook')
         res.status(200).json(allCarts)
@@ -62,11 +54,12 @@ class CartController {
   }
 
   static async deleteCart(req, res, next) {
-    // await redis.del('Carts')
+    let { id } = req.logedUser
     let { idCart } = req.params
     try {
-      const deleted = await Cart.findByIdAndDelete(idCart)
-      res.status(200).json(deleted)
+      await Cart.findByIdAndDelete(idCart)
+      const newDataCarts = await Cart.find({ idUser: id, status: false }).populate('idBook')
+      res.status(200).json({data: newDataCarts, message: "Delete Success!"})
     } catch (next) { }
   }
 }
