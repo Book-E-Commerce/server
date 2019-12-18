@@ -160,8 +160,12 @@ class TransactionController {
         ]
 
         const transactions = await Transaction.aggregate(pipeline)
-        await redis.set('Transactions-Weekly', JSON.stringify(transactions))
-        res.status(200).json(transactions)
+        let sorted = [...transactions]
+        sorted.sort((a, b) => {
+          return new Date(a._id.Date) - new Date(b._id.Date)
+        })
+        await redis.set('Transactions-Weekly', JSON.stringify(sorted))
+        res.status(200).json(sorted)
       } catch (error) {
         /* istanbul ignore next */
         next(error)
