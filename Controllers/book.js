@@ -40,10 +40,16 @@ class BookController {
           const { data: detail } = await axios({
             url: `https://www.googleapis.com/books/v1/volumes/${book.idGoogle}?key=${process.env.GOOGLE_API_KEY}`
           })
-          if (detail.volumeInfo.imageLinks.medium) {
-            book.image = detail.volumeInfo.imageLinks.medium
-            await redis.set(`Book-${_id}`, JSON.stringify(book))
-            res.status(200).json(book)
+          if (detail.volumeInfo.imageLinks) {
+            if (detail.volumeInfo.imageLinks.medium) {
+              book.image = detail.volumeInfo.imageLinks.medium
+              await redis.set(`Book-${_id}`, JSON.stringify(book))
+              res.status(200).json(book)
+            } else {
+              book.image = "https://previews.123rf.com/images/hchjjl/hchjjl1504/hchjjl150402710/38564779-doodle-book-seamless-pattern-background.jpg"
+              await redis.set(`Book-${_id}`, JSON.stringify(book))
+              res.status(200).json(book)
+            }
           } else {
             book.image = "https://previews.123rf.com/images/hchjjl/hchjjl1504/hchjjl150402710/38564779-doodle-book-seamless-pattern-background.jpg"
             await redis.set(`Book-${_id}`, JSON.stringify(book))
